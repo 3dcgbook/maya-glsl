@@ -1,0 +1,72 @@
+uniform mat4 gWVPXf : WorldViewProjection;
+uniform mat4 gWITXf : WorldInverseTranspose;
+
+
+uniform texture2D gLUTTexture <
+    string ResourceType = "2D";
+>;
+
+
+uniform sampler2D gSampler = sampler_state
+{
+	Texture = <gLUTTexture>;
+};
+
+
+uniform vec3 Light0Dir : DIRECTION
+<
+	string UIName = "Light 0 Direction";
+	string Space = "World";
+	string Object = "Light 0";
+> = {0.0, -1.0, 0.0};
+
+
+attribute vs_input
+{
+    vec3 in_position : POSITION;
+    vec3 in_normal : NORMAL;
+    vec2 in_uv : TEXCOORD0;
+};
+ 
+
+attribute vs_to_ps
+{
+    vec3 out_normal : NORMAL;
+    vec2 out_uv : TEXCOORD0;
+};
+ 
+
+attribute ps_output 
+{
+    vec4 out_color : COLOR0;
+}
+
+
+GLSLShader VS
+{
+    void main() 
+    {
+        gl_Position = gWVPXf * vec4(in_position, 1);
+        out_normal = normalize(gWITXf * vec4(in_normal,1)).xyz;
+    }
+}
+ 
+
+GLSLShader PS
+{
+    void main()
+    {
+        float lambert = (dot(-Light0Dir, out_normal) + 1.0) * 0.5;
+        vec3 color = texture2D(gSampler,lambert.xx).xyz;
+        out_color = vec4(color, 1);
+    }
+}
+ 
+technique Main
+{
+    pass p0
+    {
+        VertexShader (in vs_input, out vs_to_ps) = VS;
+        PixelShader (in vs_to_ps, out ps_output) = PS;
+    }
+}
