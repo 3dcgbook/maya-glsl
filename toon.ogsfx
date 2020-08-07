@@ -56,7 +56,8 @@ GLSLShader PS
 {
     void main()
     {
-        float lambert = (dot(-Light0Dir, out_normal) + 1.0) * 0.5;
+        float lambert = (dot(-Light0Dir, normalize(out_normal)) + 1.0) * 0.5;
+        lambert = clamp(lambert, 0.01, 0.99);
         vec3 color = texture2D(gSampler,lambert.xx).xyz;
         color = vec3(pow(color.x, 2.2), pow(color.y, 2.2), pow(color.z, 2.2));
         out_color = vec4(color, 1);
